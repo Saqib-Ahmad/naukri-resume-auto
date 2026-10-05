@@ -2,216 +2,38 @@ name: Update Naukri Resume
 
 on:
   schedule:
-    # FALLBACK ONLY
-    # GitHub may delay scheduled workflows.
-    # This is intentionally kept as a backup trigger. Remobe the comment to enable the trigger
-    #- cron: '17 09 * * *'
-    #  timezone: 'Asia/Kolkata'
+    # Automatic run at 9:00 AM IST
+    - cron: '0 9 * * *'
+      timezone: 'Asia/Kolkata'
 
-  # Primary trigger used by the iPhone automation
+    # Automatic run at 2:00 PM IST
+    - cron: '0 14 * * *'
+      timezone: 'Asia/Kolkata'
+
+  # Manual trigger for testing/emergency use
   workflow_dispatch:
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: naukri-resume-update
   cancel-in-progress: false
 
 jobs:
-
-  # ============================================================
-  # FALLBACK CHECK
-  #
-  # This job only runs for GitHub's scheduled trigger.
-  #
-  # It checks the latest workflow_dispatch run of THIS workflow:
-  #
-  #   success      -> skip scheduled fallback
-  #   queued       -> skip scheduled fallback
-  #   in_progress  -> skip scheduled fallback
-  #   failure      -> run scheduled fallback
-  #   cancelled    -> run scheduled fallback
-  #   no recent run -> run scheduled fallback
-  #
-  # ============================================================
-
-  check-if-already-ran:
+  update-naukri:
     runs-on: ubuntu-latest
-
-    if: github.event_name == 'schedule'
-
-    outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
+    timeout-minutes: 15
 
     steps:
 
-    - name: Check latest manual run
-      id: check
-      env:
-        GH_TOKEN: ${{ github.token }}
-        WORKFLOW_NAME: ${{ github.workflow }}
-    
-      run: |
-        set -euo pipefail
-    
-        echo "Current workflow: $WORKFLOW_NAME"
-        echo "Current event: ${{ github.event_name }}"
-        echo
-    
-        # Get recent workflow_dispatch runs and find the latest run
-        # belonging to this workflow.
-        LATEST_RUN=$(gh api \
-          "/repos/${{ github.repository }}/actions/runs?event=workflow_dispatch&per_page=100" \
-          --jq --arg workflow "$WORKFLOW_NAME" '
-            [
-              .workflow_runs[]
-              | select(.name == $workflow)
-            ]
-            | sort_by(.created_at)
-            | reverse
-            | .[0]
-          ')
-    
-        echo "Latest manual run:"
-        echo "$LATEST_RUN"
-        echo
-
-          # No manual run exists.
-          if [ "$LATEST_RUN" = "null" ] || [ -z "$LATEST_RUN" ]; then
-            echo "No manual run found."
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          CREATED_AT=$(echo "$LATEST_RUN" | jq -r '.created_at')
-          STATUS=$(echo "$LATEST_RUN" | jq -r '.status')
-          CONCLUSION=$(echo "$LATEST_RUN" | jq -r '.conclusion')
-          RUN_ID=$(echo "$LATEST_RUN" | jq -r '.id')
-
-          echo "Latest manual run ID: $RUN_ID"
-          echo "Created: $CREATED_AT"
-          echo "Status: $STATUS"
-          echo "Conclusion: $CONCLUSION"
-
-          # Convert creation time to epoch.
-          CREATED_EPOCH=$(date -d "$CREATED_AT" +%s)
-          NOW_EPOCH=$(date +%s)
-
-          AGE=$((NOW_EPOCH - CREATED_EPOCH))
-
-          echo "Age: $AGE seconds"
-
-          # 20 hours.
-          MAX_AGE=72000
-
-          if [ "$AGE" -ge "$MAX_AGE" ]; then
-            echo "Latest manual run is older than 20 hours."
-            echo "Scheduled fallback WILL run."
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # ----------------------------------------------------------
-          # Recent manual run exists.
-          # Decide what to do based on its state.
-          # ----------------------------------------------------------
-
-          case "$STATUS" in
-
-            queued)
-              echo "Manual run is queued."
-              echo "Scheduled fallback will NOT run."
-              echo "should_run=false" >> "$GITHUB_OUTPUT"
-              ;;
-
-            in_progress)
-              echo "Manual run is currently running."
-              echo "Scheduled fallback will NOT run."
-              echo "should_run=false" >> "$GITHUB_OUTPUT"
-              ;;
-
-            completed)
-              case "$CONCLUSION" in
-
-                success)
-                  echo "Manual run completed successfully."
-                  echo "Scheduled fallback will NOT run."
-                  echo "should_run=false" >> "$GITHUB_OUTPUT"
-                  ;;
-
-                failure)
-                  echo "Manual run failed."
-                  echo "Scheduled fallback WILL run."
-                  echo "should_run=true" >> "$GITHUB_OUTPUT"
-                  ;;
-
-                cancelled)
-                  echo "Manual run was cancelled."
-                  echo "Scheduled fallback WILL run."
-                  echo "should_run=true" >> "$GITHUB_OUTPUT"
-                  ;;
-
-                timed_out)
-                  echo "Manual run timed out."
-                  echo "Scheduled fallback WILL run."
-                  echo "should_run=true" >> "$GITHUB_OUTPUT"
-                  ;;
-
-                *)
-                  echo "Manual run has unexpected conclusion: $CONCLUSION"
-                  echo "Scheduled fallback WILL run."
-                  echo "should_run=true" >> "$GITHUB_OUTPUT"
-                  ;;
-
-              esac
-              ;;
-
-            *)
-              echo "Unexpected workflow status: $STATUS"
-              echo "Scheduled fallback WILL run."
-              echo "should_run=true" >> "$GITHUB_OUTPUT"
-              ;;
-
-          esac
-
-
-  # ============================================================
-  # MAIN JOB
-  #
-  # Runs when:
-  #
-  #   1. iPhone triggers workflow_dispatch
-  #
-  # OR
-  #
-  #   2. GitHub scheduled trigger determines that the
-  #      iPhone/manual run did not successfully complete.
-  #
-  # ============================================================
-
-  main-job:
-    needs: check-if-already-ran
-
-    if: >
-      always() &&
-      (
-        github.event_name == 'workflow_dispatch' ||
-        (
-          github.event_name == 'schedule' &&
-          needs.check-if-already-ran.outputs.should_run == 'true'
-        )
-      )
-
-    runs-on: ubuntu-latest
-
-    timeout-minutes: 10
-
-    steps:
+      # ==========================================================
+      # CHECKOUT REPOSITORY
+      # ==========================================================
 
       - name: Checkout repository
         uses: actions/checkout@v4
+
 
       # ==========================================================
       # NODE.JS
@@ -219,7 +41,6 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
-
         with:
           node-version: 22
           cache: npm
@@ -244,8 +65,7 @@ jobs:
       # ==========================================================
       # RESTORE NAUKRI AUTHENTICATION
       #
-      # state.json is NEVER committed.
-      #
+      # state.json is NEVER committed to GitHub.
       # It is reconstructed from the GitHub Secret at runtime.
       # ==========================================================
 
@@ -274,20 +94,19 @@ jobs:
             exit 1
           fi
 
-          echo "Playwright authentication state restored."
+          echo "Naukri authentication state restored."
 
 
       # ==========================================================
-      # UPDATE NAUKRI
+      # UPDATE NAUKRI RESUME
       # ==========================================================
 
       - name: Update Naukri resume
         env:
           HEADLESS: 'false'
-          RESUME_PATH: 'resume/your_resume.pdf'   #YOUR RESUME GOES HERE
+          RESUME_PATH: 'resume/SaqibAhmad_ResumeLatest.pdf'
           AUTH_STATE_PATH: 'playwright/.auth/state.json'
           ARTIFACT_DIR: 'artifacts'
-          DEBUG: 'pw:browser'
 
         run: |
           xvfb-run --auto-servernum npm run update
@@ -296,7 +115,7 @@ jobs:
       # ==========================================================
       # UPLOAD DEBUG ARTIFACTS
       #
-      # Runs even if the Naukri job fails.
+      # Runs even if the Naukri update fails.
       # ==========================================================
 
       - name: Upload debug artifacts
@@ -312,9 +131,9 @@ jobs:
 
 
       # ==========================================================
-      # REMOVE AUTH STATE
+      # REMOVE AUTHENTICATION STATE
       #
-      # state.json only exists temporarily on the runner.
+      # state.json only exists temporarily on the GitHub runner.
       # ==========================================================
 
       - name: Remove authentication state
