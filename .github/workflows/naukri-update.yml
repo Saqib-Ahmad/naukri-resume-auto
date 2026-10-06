@@ -1,48 +1,19 @@
 name: Update Naukri Resume
 
 on:
-  # ==========================================================
-  # MANUAL / EXTERNAL TRIGGER
-  #
-  # Cloudflare will call GitHub's workflow_dispatch API
-  # at 9:00 AM and 2:00 PM IST.
-  #
-  # You can also manually run this workflow from:
-  # GitHub → Actions → Update Naukri Resume → Run workflow
-  # ==========================================================
   workflow_dispatch:
-
 
 permissions:
   contents: read
 
-
-concurrency:
-  group: naukri-resume-update
-  cancel-in-progress: false
-
-
 jobs:
   update-naukri:
-
     runs-on: ubuntu-latest
-
     timeout-minutes: 15
 
-
     steps:
-
-      # ==========================================================
-      # CHECKOUT REPOSITORY
-      # ==========================================================
-
       - name: Checkout repository
         uses: actions/checkout@v4
-
-
-      # ==========================================================
-      # NODE.JS
-      # ==========================================================
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -50,36 +21,16 @@ jobs:
           node-version: 22
           cache: npm
 
-
-      # ==========================================================
-      # DEPENDENCIES
-      # ==========================================================
-
       - name: Install dependencies
         run: npm ci
-
-
-      # ==========================================================
-      # FIREFOX
-      # ==========================================================
 
       - name: Install Firefox
         run: npx playwright install --with-deps firefox
 
-
-      # ==========================================================
-      # RESTORE NAUKRI AUTHENTICATION
-      #
-      # state.json is NEVER committed to GitHub.
-      # It is reconstructed from the GitHub Secret at runtime.
-      # ==========================================================
-
       - name: Restore Naukri authentication
         env:
           NAUKRI_STORAGE_STATE: ${{ secrets.NAUKRI_STORAGE_STATE }}
-
         shell: bash
-
         run: |
           set -euo pipefail
 
@@ -101,51 +52,27 @@ jobs:
 
           echo "Naukri authentication state restored."
 
-
-      # ==========================================================
-      # UPDATE NAUKRI RESUME
-      # ==========================================================
-
       - name: Update Naukri resume
         env:
           HEADLESS: 'false'
           RESUME_PATH: 'resume/SaqibAhmad_ResumeLatest.pdf'
           AUTH_STATE_PATH: 'playwright/.auth/state.json'
           ARTIFACT_DIR: 'artifacts'
-
         run: |
           xvfb-run --auto-servernum npm run update
 
-
-      # ==========================================================
-      # UPLOAD DEBUG ARTIFACTS
-      #
-      # Runs even if the Naukri update fails.
-      # ==========================================================
-
       - name: Upload debug artifacts
         if: always()
-
         uses: actions/upload-artifact@v4
-
         with:
           name: naukri-update-${{ github.run_number }}
           path: artifacts/
           if-no-files-found: ignore
           retention-days: 7
 
-
-      # ==========================================================
-      # REMOVE AUTHENTICATION STATE
-      #
-      # state.json only exists temporarily on the GitHub runner.
-      # ==========================================================
-
       - name: Remove authentication state
         if: always()
-
         shell: bash
-
         run: |
           rm -f playwright/.auth/state.json
           echo "Temporary authentication state removed."
