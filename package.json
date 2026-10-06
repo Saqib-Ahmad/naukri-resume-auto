@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "install:browsers": "playwright install chromium",
+    "install:browsers": "playwright install firefox",
     "update": "tsx scripts/update-resume.ts",
     "bootstrap": "tsx scripts/setup-session.ts",
     "check": "tsc --noEmit"
