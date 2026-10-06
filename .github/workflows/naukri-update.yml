@@ -3,11 +3,11 @@ name: Update Naukri Resume
 on:
   schedule:
     # Automatic run at 9:00 AM IST
-    - cron: '0 9 * * *'
+    - cron: '56 9 * * *'
       timezone: 'Asia/Kolkata'
 
     # Automatic run at 2:00 PM IST
-    - cron: '0 14 * * *'
+    - cron: '26 15 * * *'
       timezone: 'Asia/Kolkata'
 
   # Manual trigger for testing/emergency use
