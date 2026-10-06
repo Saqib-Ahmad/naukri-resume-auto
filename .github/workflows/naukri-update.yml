@@ -10,6 +10,10 @@ on:
     - cron: '26 15 * * *'
       timezone: 'Asia/Kolkata'
 
+    # Temporary scheduler test: 3:47 PM IST
+    - cron: '17 10 * * *'
+
+
   # Manual trigger for testing/emergency use
   workflow_dispatch:
 
