@@ -1,4 +1,4 @@
-import { firefox, type Page, type Locator } from 'playwright';
+import { chromium, type Page, type Locator } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -461,7 +461,7 @@ async function main(): Promise<void> {
   log(`Opening ${PROFILE_URL}`);
 
   const browser =
-    await firefox.launch({
+    await chromium.launch({
       headless,
       args: [
         '--disable-dev-shm-usage',

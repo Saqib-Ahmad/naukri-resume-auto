@@ -24,8 +24,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Firefox
-        run: npx playwright install --with-deps firefox
+      - name: Install chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Restore Naukri authentication
         env:
