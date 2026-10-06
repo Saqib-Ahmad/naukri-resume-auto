@@ -1,33 +1,54 @@
 name: Update Naukri Resume
 
 on:
+  # ==========================================================
+  # TEMPORARY DIAGNOSTIC TRIGGER
+  #
+  # This will automatically run whenever we push this file.
+  # We will remove it after confirming GitHub Actions works.
+  # ==========================================================
+  push:
+    branches:
+      - main
+
+  # ==========================================================
+  # SCHEDULED TRIGGERS
+  # ==========================================================
   schedule:
+
     # Automatic run at 9:00 AM IST
-    - cron: '56 9 * * *'
+    - cron: '0 9 * * *'
       timezone: 'Asia/Kolkata'
 
     # Automatic run at 2:00 PM IST
-    - cron: '26 15 * * *'
+    - cron: '0 14 * * *'
       timezone: 'Asia/Kolkata'
 
-    # Temporary scheduler test: 3:47 PM IST
-    - cron: '33 10 * * *'
+    # Temporary scheduler test
+    # 4:20 PM IST
+    - cron: '20 16 * * *'
+      timezone: 'Asia/Kolkata'
 
-
-  # Manual trigger for testing/emergency use
+  # Manual trigger for emergency/testing use
   workflow_dispatch:
+
 
 permissions:
   contents: read
+
 
 concurrency:
   group: naukri-resume-update
   cancel-in-progress: false
 
+
 jobs:
   update-naukri:
+
     runs-on: ubuntu-latest
+
     timeout-minutes: 15
+
 
     steps:
 
