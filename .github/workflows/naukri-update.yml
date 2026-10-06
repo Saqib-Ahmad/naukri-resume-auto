@@ -2,34 +2,14 @@ name: Update Naukri Resume
 
 on:
   # ==========================================================
-  # TEMPORARY DIAGNOSTIC TRIGGER
+  # MANUAL / EXTERNAL TRIGGER
   #
-  # This will automatically run whenever we push this file.
-  # We will remove it after confirming GitHub Actions works.
+  # Cloudflare will call GitHub's workflow_dispatch API
+  # at 9:00 AM and 2:00 PM IST.
+  #
+  # You can also manually run this workflow from:
+  # GitHub → Actions → Update Naukri Resume → Run workflow
   # ==========================================================
-  push:
-    branches:
-      - main
-
-  # ==========================================================
-  # SCHEDULED TRIGGERS
-  # ==========================================================
-  schedule:
-
-    # Automatic run at 9:00 AM IST
-    - cron: '0 9 * * *'
-      timezone: 'Asia/Kolkata'
-
-    # Automatic run at 2:00 PM IST
-    - cron: '0 14 * * *'
-      timezone: 'Asia/Kolkata'
-
-    # Temporary scheduler test
-    # 4:20 PM IST
-    - cron: '20 16 * * *'
-      timezone: 'Asia/Kolkata'
-
-  # Manual trigger for emergency/testing use
   workflow_dispatch:
 
 
