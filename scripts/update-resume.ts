@@ -467,6 +467,7 @@ async function main(): Promise<void> {
       args: [
         '--disable-dev-shm-usage',
         '--disable-gpu',
+        '--disable-http2',
       ],
     });
 
