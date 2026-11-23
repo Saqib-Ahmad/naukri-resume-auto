@@ -361,13 +361,14 @@ async function verifyResumeUpdate(
   const lowerBody =
     bodyText.toLowerCase();
 
-  const successTexts = [
-    'resume uploaded successfully',
-    'resume updated successfully',
-    'resume has been updated',
-    'resume uploaded',
-    'resume updated',
-  ];
+const successTexts = [
+  'resume uploaded successfully',
+  'resume updated successfully',
+  'resume has been updated',
+  'resume has been successfully uploaded',
+  'resume uploaded',
+  'resume updated',
+];
 
   for (const text of successTexts) {
     if (lowerBody.includes(text)) {

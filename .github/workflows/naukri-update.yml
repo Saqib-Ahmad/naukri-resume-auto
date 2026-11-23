@@ -1,3 +1,4 @@
+
 name: Update Naukri Resume
 
 on:
@@ -58,32 +59,7 @@ jobs:
           RESUME_PATH: 'resume/SaqibAhmad_ResumeLatest.pdf'
           AUTH_STATE_PATH: 'playwright/.auth/state.json'
           ARTIFACT_DIR: 'artifacts'
-        shell: bash
-        run: |
-          set -u
-
-          MAX_ATTEMPTS=3
-
-          for attempt in $(seq 1 $MAX_ATTEMPTS); do
-            echo "========================================"
-            echo "Naukri update attempt $attempt of $MAX_ATTEMPTS"
-            echo "========================================"
-
-            if xvfb-run --auto-servernum npm run update; then
-              echo "Naukri resume update succeeded on attempt $attempt."
-              exit 0
-            fi
-
-            echo "Naukri resume update failed on attempt $attempt."
-
-            if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
-              echo "Waiting 20 seconds before retry..."
-              sleep 20
-            fi
-          done
-
-          echo "Naukri resume update failed after $MAX_ATTEMPTS attempts."
-          exit 1
+        run: xvfb-run --auto-servernum npm run update
 
       - name: Upload debug artifacts
         if: always()
