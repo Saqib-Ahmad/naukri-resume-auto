@@ -53,6 +53,39 @@ jobs:
 
           echo "Naukri authentication state restored."
 
+      - name: Check authentication state structure
+        shell: bash
+        run: |
+          node -e "
+          const fs = require('fs');
+          const state = JSON.parse(
+            fs.readFileSync('playwright/.auth/state.json', 'utf8')
+          );
+
+          const cookies = state.cookies || [];
+
+          console.log('Cookie count:', cookies.length);
+
+          console.log(
+            'Naukri cookie domains:',
+            [...new Set(
+              cookies
+                .filter(c => c.domain.includes('naukri.com'))
+                .map(c => c.domain)
+            )]
+          );
+
+          console.log(
+            'Naukri cookies present:',
+            cookies.some(c => c.domain.includes('naukri.com'))
+          );
+
+          console.log(
+            'Local storage origins:',
+            (state.origins || []).map(o => o.origin)
+          );
+          "
+
       - name: Update Naukri resume
         env:
           HEADLESS: 'false'
